@@ -3,11 +3,15 @@ use std::str;
 use clap::{Args, Parser, Subcommand};
 
 #[derive(Debug, Parser)]
-#[command(version, about, long_about = None)]
+#[command(
+    version,
+    about,
+    long_about = None,
+)]
 #[command(propagate_version = true)]
 pub struct Cli {
     #[command(subcommand)]
-    pub command: Commands,
+    pub command: Option<Commands>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -31,13 +35,12 @@ pub struct TestCommand {
     pub all: bool,
 }
 
-
 #[derive(Debug, Args)]
 pub struct CourseCommand {
     /// Current course information
-    #[arg(short, long, default_value="true")]
+    #[arg(short, long, default_value = "true")]
     pub current: bool,
-    
+
     /// List all courses from db-academy.io
     #[arg(short, long)]
     pub list: bool,
