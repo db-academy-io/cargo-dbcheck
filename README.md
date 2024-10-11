@@ -1,2 +1,2 @@
-# cargo-tester
+# cargo-dbcheck
 

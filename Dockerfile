@@ -12,5 +12,5 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 # ======== Final Stage ========
 FROM rust:1-${VARIANT} as final
 
-COPY --from=builder /usr/local/cargo/bin/cargo-tester /usr/local/cargo/bin/
+COPY --from=builder /usr/local/cargo/bin/cargo-dbcheck /usr/local/cargo/bin/
 CMD ["bash"]
