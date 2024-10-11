@@ -1,7 +1,11 @@
-use std::env;
+#![warn(clippy::all)]
+mod args;
+
+use crate::args::Cli;
+
+use clap::Parser;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-
-    println!("Cargo-dbcheck executed with arguments: {:?}", &args[1..]);
+    let args = Cli::parse();
+    println!("{:?}", args);
 }
