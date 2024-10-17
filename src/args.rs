@@ -16,13 +16,16 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
+    /// Init a project repo
+    Init(InitCommand),
+
     /// Run tests for the current stage
     Test(TestCommand),
 
     /// Get course information
     Course(CourseCommand),
 
-    /// Move to the next stage of the course
+    /// Move to the next topic of the course
     Next(NextCommand),
 
     /// Submit current progress and move to the next stage of the course
@@ -51,3 +54,10 @@ pub struct SubmitCommand {}
 
 #[derive(Debug, Args)]
 pub struct NextCommand {}
+
+#[derive(Debug, Args)]
+pub struct InitCommand {
+    /// A user token to interact with db-academy.io
+    #[arg(short, long)]
+    pub user_token: String,
+}
