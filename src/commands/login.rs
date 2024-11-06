@@ -1,0 +1,27 @@
+use super::CommandContext;
+use anyhow::{anyhow, Result};
+use std::io::{self, Write};
+
+pub fn login(context: &mut CommandContext) -> Result<(), anyhow::Error> {
+    let auth_url = "https://localhost:3000/auth/cli";
+    println!(
+        "Go to the following link in your browser, and complete the sign-in prompts:\n{auth_url}\n"
+    );
+    print!("Once finished, enter the verification code provided in your browser: ");
+    io::stdout().flush().expect("Unable to flush stdout");
+
+    let mut buffer = String::new();
+    io::stdin().read_line(&mut buffer)?;
+
+    let token = buffer.trim();
+    if token.is_empty() {
+        return Err(anyhow!("An empty token was provided, cancelling..."));
+    }
+
+    context.save_token(token.to_string())?;
+
+    let pass = context.get_active_token()?;
+    println!("Saved token is: {pass}");
+
+    Ok(())
+}

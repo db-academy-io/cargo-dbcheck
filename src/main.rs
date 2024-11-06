@@ -1,7 +1,9 @@
 #![warn(clippy::all)]
 mod args;
+mod commands;
 
 use crate::args::Cli;
+use commands::{CommandContext, CommandExecutor};
 use std::env;
 
 use clap::Parser;
@@ -17,6 +19,8 @@ fn main() {
         args.remove(1);
     }
 
-    let args = Cli::parse_from(args);
-    println!("{:?}", args);
+    let cli = Cli::parse_from(args);
+    let config = ".db-academy-io.json";
+    let mut context = CommandContext { _config: config };
+    cli.command.execute(&mut context);
 }
