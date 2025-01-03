@@ -1,9 +1,12 @@
 [package]
 name = "cargo-dbcheck"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "A CLI tool for tracking the progress in the db-academy.io courses"
 license = "MIT"
+keywords = ["cli", "dbcheck", "db-academy-io", "database-development"]
+categories = ["database-implementations", "command-line-utilities", "development-tools::cargo-plugins",]
+repository = "https://github.com/db-academy-io/cargo-dbcheck"
 
 [dependencies]
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
