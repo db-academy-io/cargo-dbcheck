@@ -19,10 +19,10 @@ pub fn init(
     _context: &mut CommandContext,
     command: &InitCommand,
 ) -> Result<(), anyhow::Error> {
-    println!("Init command");
+    println!("Initializing project repository");
     println!("Project id: {}", command.project_id);
     println!("Path: {:?}", command.path);
-    
+
     let path = command.path.clone().unwrap_or_else(|| PathBuf::from("."));
 
     let repo = Repository::init(path)?;
