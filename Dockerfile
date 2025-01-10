@@ -1,4 +1,4 @@
-ARG VARIANT="bookworm"
+ARG VARIANT="bullseye"
 FROM rust:1-${VARIANT} AS builder
 
 WORKDIR /app

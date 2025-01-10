@@ -1,6 +1,6 @@
 use clap::Args;
-use std::path::PathBuf;
 use git2::Repository;
+use std::path::PathBuf;
 
 use super::CommandContext;
 
@@ -15,10 +15,7 @@ pub struct InitCommand {
     pub path: Option<PathBuf>,
 }
 
-pub fn init(
-    _context: &mut CommandContext,
-    command: &InitCommand,
-) -> Result<(), anyhow::Error> {
+pub fn init(_context: &mut CommandContext, command: &InitCommand) -> Result<(), anyhow::Error> {
     println!("Initializing project repository");
     println!("Project id: {}", command.project_id);
     println!("Path: {:?}", command.path);

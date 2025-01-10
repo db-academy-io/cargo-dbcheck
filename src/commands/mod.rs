@@ -1,6 +1,6 @@
+mod init;
 mod login;
 mod logout;
-mod init;
 
 use keyring::Entry;
 
