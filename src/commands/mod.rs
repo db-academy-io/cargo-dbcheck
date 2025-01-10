@@ -1,9 +1,12 @@
 mod login;
 mod logout;
+mod init;
 
 use keyring::Entry;
 
 use clap::{Args, Subcommand};
+
+use init::{init, InitCommand};
 use login::login;
 use logout::logout;
 
@@ -46,8 +49,9 @@ pub trait CommandExecutor {
 impl CommandExecutor for Command {
     fn execute(&self, context: &mut CommandContext) {
         let _ = match self {
-            Command::Login(_command) => login(context),
-            Command::Logout(_command) => logout(context),
+            Command::Login => login(context),
+            Command::Logout => logout(context),
+            Command::Init(command) => init(context, command),
             _ => todo!(),
         };
     }
@@ -56,10 +60,10 @@ impl CommandExecutor for Command {
 #[derive(Debug, Subcommand)]
 pub enum Command {
     /// Authenticate on db-academy.io
-    Login(LoginCommand),
+    Login,
 
     /// Logout from db-academy.io
-    Logout(LogoutCommand),
+    Logout,
 
     /// Init a project repo
     Init(InitCommand),
@@ -99,16 +103,3 @@ pub struct SubmitCommand {}
 
 #[derive(Debug, Args)]
 pub struct NextCommand {}
-
-#[derive(Debug, Args)]
-pub struct InitCommand {
-    /// A project id, find the list of project ids on db-academy.io
-    #[arg(short, long)]
-    pub project_id: String,
-}
-
-#[derive(Debug, Args)]
-pub struct LoginCommand {}
-
-#[derive(Debug, Args)]
-pub struct LogoutCommand {}
