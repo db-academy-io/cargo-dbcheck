@@ -14,3 +14,10 @@ anyhow = "1.0.93"
 clap = { version = "4.5.4", features = ["derive"] }
 clap-cargo = "0.14.1"
 git2 = "0.20.0"
+
+[dev-dependencies]
+pre-commit = "0.5.2"
+
+[package.metadata.precommit]
+fmt = "cargo fmt -- --write-mode diff 2>&1"
+test = "cargo test 2>&1"
