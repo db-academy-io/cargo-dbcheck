@@ -102,9 +102,9 @@ pub struct NextCommand {}
 
 #[derive(Debug, Args)]
 pub struct InitCommand {
-    /// A user token to interact with db-academy.io
+    /// A project id, find the list of project ids on db-academy.io
     #[arg(short, long)]
-    pub user_token: String,
+    pub project_id: String,
 }
 
 #[derive(Debug, Args)]
