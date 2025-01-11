@@ -13,7 +13,9 @@ RUN cargo install --path .
 FROM rust:1-${VARIANT} AS final
 
 COPY --from=builder /usr/local/cargo/bin/cargo-dbcheck /usr/local/bin/
-RUN apt-get update && apt-get install -y libpq-dev pkg-config libdbus-1-dev
+RUN apt-get update && apt-get install -y libpq-dev pkg-config pre-commit libdbus-1-dev
+RUN cargo install just
+
 ENV PATH="/usr/local/bin:${PATH}"
 ENV CARGO_FORCE_CARGO_BIN=1 
 CMD ["bash"]
