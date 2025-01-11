@@ -14,7 +14,7 @@ docker-publish:
 
 # Build and release to crates.io
 cargo-publish:
-    cargo version-upgrade
+    cargo-version-upgrade patch
     cargo publish
 
 pre_commit:
