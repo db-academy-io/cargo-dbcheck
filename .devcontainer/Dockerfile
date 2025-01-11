@@ -6,4 +6,4 @@ RUN apt-get update && apt-get install -y \
     pre-commit
     
 RUN rustup component add clippy rustfmt
-RUN cargo install just
+RUN cargo install just cargo-version-upgrade
