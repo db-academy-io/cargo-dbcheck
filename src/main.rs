@@ -3,6 +3,7 @@ mod args;
 mod commands;
 mod error;
 mod context;
+mod course;
 
 use crate::args::Cli;
 use commands::CommandExecutor;

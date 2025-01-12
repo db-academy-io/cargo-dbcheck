@@ -12,6 +12,9 @@ pub enum DbCheckError {
 
     /// An internal DBCheck error
     InternalError(String),
+
+    /// An error related to network operations
+    Network(String),
 }
 
 impl Display for DbCheckError {
@@ -21,6 +24,7 @@ impl Display for DbCheckError {
             DbCheckError::Keyring(e) => write!(f, "Keyring error: {}", e),
             DbCheckError::InternalError(e) => write!(f, "Internal error: {}", e),
             DbCheckError::Git(e) => write!(f, "Git error: {}", e),
+            DbCheckError::Network(e) => write!(f, "Network error: {}", e),
         }
     }
 }

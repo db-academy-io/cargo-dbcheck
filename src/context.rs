@@ -25,6 +25,7 @@ impl<'a> CommandContext<'a> {
 pub struct SecretManager;
 
 impl SecretManager {
+    #[allow(dead_code)]
     pub fn get_active_token(&mut self) -> Result<String, DbCheckError> {
         let service = "db-academy-io";
         let username = "db-academy-io-secret-token";
@@ -47,7 +48,7 @@ impl SecretManager {
         entry
             .set_password(&token)
             .map_err(|e| DbCheckError::Keyring(e))?;
-        println!("Token stored securely.");
+        println!("The token has been saved successfully");
         Ok(())
     }
 

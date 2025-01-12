@@ -3,6 +3,7 @@ alias db := docker-build
 alias dp := docker-publish
 alias p := pre_commit
 alias cp := cargo-publish
+alias lp := local-publish
 
 # Build docker file
 docker:
@@ -21,6 +22,11 @@ docker-publish:
 cargo-publish:
     cargo-version-upgrade patch
     cargo publish
+
+# Build and release to crates.io
+local-publish:
+    cargo build --release
+    cargo install --path .
 
 pre_commit:
     pre-commit run --all-files

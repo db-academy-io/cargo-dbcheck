@@ -28,10 +28,6 @@ impl CommandExecutor for LoginCommand {
         }
 
         context.secret_manager.save_token(token.to_string())?;
-
-        let pass = context.secret_manager.get_active_token()?;
-        println!("Saved token is: {pass}");
-
         Ok(())
     }
 }

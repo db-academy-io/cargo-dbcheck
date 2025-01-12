@@ -10,7 +10,7 @@ use init::InitCommand;
 use login::LoginCommand;
 use logout::LogoutCommand;
 use course::CoursesCommand;
-use progress::{SubmitCommand, NextTopicCommand, TestCommand};
+use progress::{NextTopicCommand, StatusCommand, SubmitCommand, TestCommand};
 
 use crate::{context::CommandContext, error::DbCheckError};
 
@@ -28,6 +28,9 @@ pub enum Command {
 
     /// Run tests for the current stage
     Test(TestCommand),
+
+    /// Show the status of the current project
+    Status(StatusCommand),
 
     /// Get course information
     Courses(CoursesCommand),
@@ -51,6 +54,7 @@ impl CommandExecutor for Command {
             Command::Logout(logout) => logout.execute(context),
             Command::Init(init) => init.execute(context),
             Command::Test(test) => test.execute(context),
+            Command::Status(status) => status.execute(context),
             Command::Courses(courses) => courses.execute(context),
             Command::NextTopic(next_topic) => next_topic.execute(context),
             Command::Submit(submit) => submit.execute(context),
