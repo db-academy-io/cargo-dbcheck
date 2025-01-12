@@ -1,7 +1,6 @@
 use crate::error::DbCheckError;
 
 use super::{CommandContext, CommandExecutor};
-use anyhow::Result;
 use clap::Args;
 
 #[derive(Debug, Args)]
