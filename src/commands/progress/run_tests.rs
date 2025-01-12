@@ -1,6 +1,6 @@
 use clap::Args; 
 
-use crate::commands::{CommandContext, CommandExecutor};
+use crate::{commands::{CommandContext, CommandExecutor}, error::DbCheckError};
 
 #[derive(Debug, Args)]
 pub struct TestCommand {
@@ -9,7 +9,7 @@ pub struct TestCommand {
 }
 
 impl CommandExecutor for TestCommand {
-    fn execute(&self, _context: &mut CommandContext) -> Result<(), anyhow::Error> {
+    fn execute(&self, _context: &mut CommandContext) -> Result<(), DbCheckError> {
         println!("Running tests");
         Ok(())
     }

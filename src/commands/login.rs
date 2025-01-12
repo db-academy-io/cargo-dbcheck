@@ -1,5 +1,7 @@
+use crate::error::DbCheckError;
+
 use super::{CommandContext, CommandExecutor};
-use anyhow::{anyhow, Result};
+
 use clap::Args;
 use std::io::{self, Write};
 
@@ -7,7 +9,7 @@ use std::io::{self, Write};
 pub struct LoginCommand {}
 
 impl CommandExecutor for LoginCommand {
-    fn execute(&self, context: &mut CommandContext) -> Result<(), anyhow::Error> {
+    fn execute(&self, context: &mut CommandContext) -> Result<(), DbCheckError> {
         let auth_url = context.get_remote_server_url()? + "/auth/cli";
         
         println!(
@@ -18,16 +20,16 @@ impl CommandExecutor for LoginCommand {
         io::stdout().flush().expect("Unable to flush stdout");
 
         let mut buffer = String::new();
-        io::stdin().read_line(&mut buffer)?;
+        io::stdin().read_line(&mut buffer).map_err(|e| DbCheckError::IO(e))?;
 
         let token = buffer.trim();
         if token.is_empty() {
-            return Err(anyhow!("An empty token was provided, cancelling..."));
+            return Err(DbCheckError::InternalError("An empty token was provided, cancelling...".to_string()));
         }
 
-        context.save_token(token.to_string())?;
+        context.secret_manager.save_token(token.to_string())?;
 
-        let pass = context.get_active_token()?;
+        let pass = context.secret_manager.get_active_token()?;
         println!("Saved token is: {pass}");
 
         Ok(())

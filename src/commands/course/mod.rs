@@ -1,5 +1,7 @@
 use clap::Args;
 
+use crate::error::DbCheckError;
+
 use super::{CommandContext, CommandExecutor};
 
 
@@ -15,7 +17,8 @@ pub struct CoursesCommand {
 }
 
 impl CommandExecutor for CoursesCommand {
-    fn execute(&self, context: &mut CommandContext) -> Result<(), anyhow::Error> {
+    fn execute(&self, _context: &mut CommandContext) -> Result<(), DbCheckError> {
+        println!("Listing courses");
         Ok(())
     }
 }
