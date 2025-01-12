@@ -8,7 +8,7 @@ use std::env;
 
 use clap::Parser;
 
-fn main() {
+fn main() -> Result<(), anyhow::Error> {
     let mut args: Vec<String> = env::args().collect();
 
     // In case of calling dbcheck from cargo, cargo will send
@@ -22,5 +22,8 @@ fn main() {
     let cli = Cli::parse_from(args);
     let config = ".db-academy-io.json";
     let mut context = CommandContext { _config: config };
-    cli.command.execute(&mut context);
+    let result = cli.command.execute(&mut context);
+    println!("{:?}", result);
+
+    Ok(())
 }

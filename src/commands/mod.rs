@@ -40,20 +40,25 @@ impl<'a> CommandContext<'a> {
         entry.delete_credential()?;
         Ok(())
     }
+
+    pub fn get_remote_server_url(&mut self) -> Result<String, anyhow::Error> {
+        Ok("https://db-academy.io".to_string())
+    }
 }
 
 pub trait CommandExecutor {
-    fn execute(&self, context: &mut CommandContext);
+    fn execute(&self, context: &mut CommandContext) -> Result<(), anyhow::Error>;
 }
 
 impl CommandExecutor for Command {
-    fn execute(&self, context: &mut CommandContext) {
+    fn execute(&self, context: &mut CommandContext) -> Result<(), anyhow::Error> {
         let _ = match self {
             Command::Login => login(context),
             Command::Logout => logout(context),
             Command::Init(command) => init(context, command),
             _ => todo!(),
         };
+        Ok(())
     }
 }
 

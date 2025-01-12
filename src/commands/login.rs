@@ -3,7 +3,7 @@ use anyhow::{anyhow, Result};
 use std::io::{self, Write};
 
 pub fn login(context: &mut CommandContext) -> Result<(), anyhow::Error> {
-    let auth_url = "https://localhost:3000/auth/cli";
+    let auth_url = context.get_remote_server_url()? + "/auth/cli";
     println!(
         "Go to the following link in your browser, and complete the sign-in prompts:\n{auth_url}\n"
     );
