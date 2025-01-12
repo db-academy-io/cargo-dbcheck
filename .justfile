@@ -1,10 +1,15 @@
 alias d := docker
+alias db := docker-build
 alias dp := docker-publish
 alias p := pre_commit
 alias cp := cargo-publish
 
 # Build docker file
 docker:
+    docker build -t dbacademyio/dbcheck .
+
+# Build docker file
+docker-build:
     docker build -t dbacademyio/dbcheck .
 
 # Publish docker file

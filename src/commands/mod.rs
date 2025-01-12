@@ -1,14 +1,19 @@
 mod init;
 mod login;
 mod logout;
+mod course;
+mod progress;
 
 use keyring::Entry;
 
-use clap::{Args, Subcommand};
+use clap::Subcommand;
 
-use init::{init, InitCommand};
-use login::login;
-use logout::logout;
+use init::InitCommand;
+use login::LoginCommand;
+use logout::LogoutCommand;
+use course::CoursesCommand;
+use progress::{SubmitCommand, NextTopicCommand, TestCommand};
+
 
 #[derive(Debug)]
 pub struct CommandContext<'a> {
@@ -53,9 +58,10 @@ pub trait CommandExecutor {
 impl CommandExecutor for Command {
     fn execute(&self, context: &mut CommandContext) -> Result<(), anyhow::Error> {
         let _ = match self {
-            Command::Login => login(context),
-            Command::Logout => logout(context),
-            Command::Init(command) => init(context, command),
+            Command::Login(command) => command.execute(context),
+            Command::Logout(command) => command.execute(context),
+            Command::Init(command) => command.execute(context),
+            Command::Courses(command) => command.execute(context),
             _ => todo!(),
         };
         Ok(())
@@ -65,10 +71,10 @@ impl CommandExecutor for Command {
 #[derive(Debug, Subcommand)]
 pub enum Command {
     /// Authenticate on db-academy.io
-    Login,
+    Login(LoginCommand),
 
     /// Logout from db-academy.io
-    Logout,
+    Logout(LogoutCommand),
 
     /// Init a project repo
     Init(InitCommand),
@@ -77,34 +83,12 @@ pub enum Command {
     Test(TestCommand),
 
     /// Get course information
-    Course(CourseCommand),
+    Courses(CoursesCommand),
 
     /// Move to the next topic of the course
-    Next(NextCommand),
+    #[command(name = "next")]
+    NextTopic(NextTopicCommand),
 
     /// Submit current progress and move to the next stage of the course
     Submit(SubmitCommand),
 }
-
-#[derive(Debug, Args)]
-pub struct TestCommand {
-    #[arg(short, long)]
-    pub all: bool,
-}
-
-#[derive(Debug, Args)]
-pub struct CourseCommand {
-    /// Current course information
-    #[arg(short, long, default_value = "true")]
-    pub current: bool,
-
-    /// List all courses from db-academy.io
-    #[arg(short, long)]
-    pub list: bool,
-}
-
-#[derive(Debug, Args)]
-pub struct SubmitCommand {}
-
-#[derive(Debug, Args)]
-pub struct NextCommand {}

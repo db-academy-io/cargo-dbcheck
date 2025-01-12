@@ -2,7 +2,7 @@ use clap::Args;
 use git2::Repository;
 use std::path::PathBuf;
 
-use super::CommandContext;
+use super::{CommandContext, CommandExecutor};
 
 #[derive(Debug, Args)]
 pub struct InitCommand {
@@ -15,15 +15,19 @@ pub struct InitCommand {
     pub path: Option<PathBuf>,
 }
 
-pub fn init(_context: &mut CommandContext, command: &InitCommand) -> Result<(), anyhow::Error> {
-    println!("Initializing project repository");
-    println!("Project id: {}", command.project_id);
-    println!("Path: {:?}", command.path);
+impl CommandExecutor for InitCommand {
+    
+    fn execute(&self, _context: &mut CommandContext) -> Result<(), anyhow::Error> {
+        println!("Initializing project repository");
+        println!("Project id: {}", self.project_id);
+        println!("Path: {:?}", self.path);
 
-    let path = command.path.clone().unwrap_or_else(|| PathBuf::from("."));
+        let path = self.path.clone().unwrap_or_else(|| PathBuf::from("."));
 
-    let repo = Repository::init(path)?;
-    println!("Repository initialized at {:?}", repo.path());
+        let repo = Repository::init(path)?;
+        println!("Repository initialized at {:?}", repo.path());
 
-    Ok(())
+        Ok(())
+    }
+    
 }

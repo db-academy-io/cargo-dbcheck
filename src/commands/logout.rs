@@ -1,7 +1,14 @@
-use super::CommandContext;
+use super::{CommandContext, CommandExecutor};
+use anyhow::Result;
+use clap::Args;
 
-pub fn logout(context: &mut CommandContext) -> Result<(), anyhow::Error> {
-    context.remove_token()?;
-    println!("Successfully logged out");
-    Ok(())
+#[derive(Debug, Args)]
+pub struct LogoutCommand;
+
+impl CommandExecutor for LogoutCommand {
+    fn execute(&self, context: &mut CommandContext) -> Result<(), anyhow::Error> {
+        context.remove_token()?;
+        println!("Successfully logged out");
+        Ok(())
+    }
 }
