@@ -44,7 +44,9 @@ impl CommandExecutor for InitCommand {
 
         if self.reinitialize {
             warn!("Reinitializing repository, all existing files will be removed...");
-            std::fs::remove_dir_all(&path_absolute).map_err(DbCheckError::IO)?;
+            if path_absolute.exists() {
+                std::fs::remove_dir_all(&path_absolute).map_err(DbCheckError::IO)?;
+            }
         }
 
         let repo = Repository::init(&path_absolute).map_err(DbCheckError::Git)?;
@@ -67,17 +69,14 @@ impl InitCommand {
         debug!("Creating directory: {:?}", dbacademydir);
         std::fs::create_dir_all(dbacademydir.clone()).map_err(DbCheckError::IO)?;
 
-        debug!("Getting course syllabus");
         let course_syllabus = self.get_course_syllabus(context)?;
-        debug!("Course syllabus: {:?}", course_syllabus);
         let syllabus_file =
             File::create(dbacademydir.join("syllabus.json")).map_err(DbCheckError::IO)?;
         serde_json::to_writer_pretty(syllabus_file, &course_syllabus)
             .map_err(|e| DbCheckError::IO(e.into()))?;
 
-        debug!("Getting course status");
         let course_status = self.get_course_status(context)?;
-        debug!("Course status: {:?}", course_status);
+        
         let status_file =
             File::create(dbacademydir.join("status.json")).map_err(DbCheckError::IO)?;
         serde_json::to_writer_pretty(status_file, &course_status)
@@ -90,10 +89,9 @@ impl InitCommand {
         debug!("Getting course syllabus");
         let url = format!("https://db-academy.io/api/course/{}", self.project_id);
         debug!("URL: {:?}", url);
+        
         let json_value = context.get_request(url)?;
-        debug!("JSON value: {:?}", json_value);
         let response_wrapper: CourseResponseWrapper = json_value.try_into()?;
-        debug!("Response wrapper: {:?}", response_wrapper);
         Ok(response_wrapper.body)
     }
 
@@ -102,12 +100,12 @@ impl InitCommand {
         context: &mut CommandContext,
     ) -> Result<CourseStatus, DbCheckError> {
         debug!("Getting course status");
+        
         let url = format!("https://db-academy.io/api/course/{}", self.project_id);
         debug!("URL: {:?}", url);
+        
         let json_value = context.get_request(url)?;
-        debug!("JSON value: {:?}", json_value);
         let response_wrapper: CourseStatusResponseWrapper = json_value.try_into()?;
-        debug!("Response wrapper: {:?}", response_wrapper);
 
         let mut course_status = response_wrapper.body;
         if self.reinitialize {

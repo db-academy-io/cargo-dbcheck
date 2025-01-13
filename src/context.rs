@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use git2::Repository;
 use keyring::Entry;
-use log::info;
+use log::{debug, info};
 
 use crate::error::DbCheckError;
 
@@ -27,27 +27,42 @@ impl<'a> CommandContext<'a> {
     }
 
     pub fn get_request(&mut self, url: String) -> Result<serde_json::Value, DbCheckError> {
+        debug!("Getting request for URL: {:?}", url);
         let client = reqwest::blocking::Client::new();
 
         let mut request_builder = client.get(url);
 
         if let Ok(token) = self.secret_manager.get_active_token() {
+            debug!("Token exists, adding to request header as Authorization key");
             request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
         }
 
         let response = request_builder
             .send()
             .map_err(|e| DbCheckError::Network(e.to_string()))?;
+        
+        debug!("Response status: {:?}", response.status());
+
         response
             .json()
             .map_err(|e| DbCheckError::Network(e.to_string()))
     }
 
     pub fn is_repo_initialized(&mut self, path: &PathBuf) -> Result<bool, DbCheckError> {
+        debug!("Checking if repo is initialized");
+
         let db_academy_dir = self.path_manager.get_repo_path(path)?;
+        debug!("DB Academy directory: {:?}", db_academy_dir);
+        
         let status_file = self.path_manager.get_course_status_file(path)?;
+        debug!("Status file: {:?}", status_file);
+        
         let syllabus_file = self.path_manager.get_course_syllabus_file(path)?;
+        debug!("Syllabus file: {:?}", syllabus_file);
+        
         let repo = Repository::open(path);
+        debug!("Repo: {:?}", repo.is_ok());
+        
         Ok(db_academy_dir.exists()
             && status_file.exists()
             && syllabus_file.exists()
@@ -59,7 +74,6 @@ impl<'a> CommandContext<'a> {
 pub struct SecretManager;
 
 impl SecretManager {
-    #[allow(dead_code)]
     pub fn get_active_token(&mut self) -> Result<String, DbCheckError> {
         let service = "db-academy-io";
         let username = "db-academy-io-secret-token";
