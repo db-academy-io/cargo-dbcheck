@@ -10,7 +10,7 @@ use init::InitCommand;
 use login::LoginCommand;
 use logout::LogoutCommand;
 use course::CoursesCommand;
-use progress::{NextTopicCommand, StatusCommand, SubmitCommand, TestCommand};
+use progress::{NextTopicCommand, StatusCommand, SubmitCommand, TestCommand, PullCommand};
 
 use crate::{context::CommandContext, error::DbCheckError};
 
@@ -31,6 +31,9 @@ pub enum Command {
 
     /// Show the status of the current project
     Status(StatusCommand),
+
+    /// Pull the current project status from db-academy.io
+    Pull(PullCommand),
 
     /// Get course information
     Courses(CoursesCommand),
@@ -58,6 +61,7 @@ impl CommandExecutor for Command {
             Command::Courses(courses) => courses.execute(context),
             Command::NextTopic(next_topic) => next_topic.execute(context),
             Command::Submit(submit) => submit.execute(context),
+            Command::Pull(pull) => pull.execute(context),
         }
     }
 }
