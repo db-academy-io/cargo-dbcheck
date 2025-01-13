@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+#[derive(Debug)]
 pub enum DbCheckError {
     /// An error related to IO operations
     IO(std::io::Error),

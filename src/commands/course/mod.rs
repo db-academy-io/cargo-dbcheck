@@ -1,9 +1,9 @@
 use clap::Args;
+use log::info;
 
 use crate::error::DbCheckError;
 
 use super::{CommandContext, CommandExecutor};
-
 
 #[derive(Debug, Args)]
 pub struct CoursesCommand {
@@ -18,7 +18,7 @@ pub struct CoursesCommand {
 
 impl CommandExecutor for CoursesCommand {
     fn execute(&self, _context: &mut CommandContext) -> Result<(), DbCheckError> {
-        println!("Listing courses");
+        info!("Listing courses");
         Ok(())
     }
 }

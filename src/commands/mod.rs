@@ -1,19 +1,18 @@
+mod course;
 mod init;
 mod login;
 mod logout;
-mod course;
 mod progress;
 
 use clap::Subcommand;
 
+use course::CoursesCommand;
 use init::InitCommand;
 use login::LoginCommand;
 use logout::LogoutCommand;
-use course::CoursesCommand;
-use progress::{NextTopicCommand, StatusCommand, SubmitCommand, TestCommand, PullCommand};
+use progress::{NextTopicCommand, PullCommand, StatusCommand, SubmitCommand, TestCommand};
 
 use crate::{context::CommandContext, error::DbCheckError};
-
 
 #[derive(Debug, Subcommand)]
 pub enum Command {

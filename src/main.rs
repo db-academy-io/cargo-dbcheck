@@ -1,18 +1,23 @@
 #![warn(clippy::all)]
 mod args;
 mod commands;
-mod error;
 mod context;
 mod course;
+mod error;
 
 use crate::args::Cli;
 use commands::CommandExecutor;
 use context::CommandContext;
+use error::DbCheckError;
+use fern::Dispatch;
+use log::{error, LevelFilter};
 use std::env;
 
 use clap::Parser;
 
 fn main() {
+    init_logger().unwrap();
+
     let mut args: Vec<String> = env::args().collect();
 
     // In case of calling dbcheck from cargo, cargo will send
@@ -24,9 +29,45 @@ fn main() {
     }
 
     let cli = Cli::parse_from(args);
-    let config = ".db-academy-io.json";
+    let config = ".db-academy/config.json";
     let mut context = CommandContext::new(config);
     if let Err(e) = cli.command.execute(&mut context) {
-        println!("Error: {}", e);
+        error!("Error: {}", e);
     }
+}
+
+fn init_logger() -> Result<(), DbCheckError> {
+    let base_config = Dispatch::new();
+
+    let logfile = fern::log_file("log/output.log").map_err(|e| DbCheckError::IO(e))?;
+    let file_config = Dispatch::new().level(LevelFilter::Debug).chain(logfile);
+
+    let stdout_config = Dispatch::new()
+        .level(LevelFilter::Info)
+        .chain(std::io::stdout());
+
+    let formatter =
+        |out: fern::FormatCallback, message: &std::fmt::Arguments, record: &log::Record| {
+            let target = record
+                .target()
+                .split("::")
+                .last()
+                .unwrap_or("")
+                .to_uppercase();
+
+            out.finish(format_args!(
+                "[{target}][{level}] {message}",
+                level = record.level(),
+                target = target,
+                message = message
+            ));
+        };
+
+    base_config
+        .format(formatter)
+        .chain(file_config)
+        .chain(stdout_config)
+        .apply()
+        .map_err(|e| DbCheckError::InternalError(e.to_string()))?;
+    Ok(())
 }

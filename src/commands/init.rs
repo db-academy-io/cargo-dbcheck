@@ -1,9 +1,13 @@
 use clap::Args;
 use git2::Repository;
+use log::{debug, info, warn};
 use std::fs::File;
-use std::path::{PathBuf, self};
+use std::path::{self, PathBuf};
 
-use crate::{course::{Course, CourseResponseWrapper, CourseStatus, CourseStatusResponseWrapper}, error::DbCheckError};
+use crate::{
+    course::{Course, CourseResponseWrapper, CourseStatus, CourseStatusResponseWrapper},
+    error::DbCheckError,
+};
 
 use super::{CommandContext, CommandExecutor};
 
@@ -23,28 +27,28 @@ pub struct InitCommand {
 }
 
 impl CommandExecutor for InitCommand {
-    
     fn execute(&self, context: &mut CommandContext) -> Result<(), DbCheckError> {
-        println!("Initializing course project repository");
-        println!("Project id: {}", self.project_id);
-        
+        info!("Initializing course project repository");
+        info!("Project id: {}", self.project_id);
+
         let path_given = self.path.clone().unwrap_or(".".into());
-        
-        let path_absolute = path::absolute(&path_given)
-            .map_err(|e| DbCheckError::IO(e))?;
-        
+        debug!("Path given: {:?}", path_given);
+
+        let path_absolute = path::absolute(&path_given).map_err(|e| DbCheckError::IO(e))?;
+
+        debug!("Path absolute: {:?}", path_absolute);
         if context.is_repo_initialized(&path_absolute)? && !self.reinitialize {
-            println!("Repository already initialized");
+            warn!("Repository already initialized");
             return Ok(());
         }
 
         if self.reinitialize {
-            println!("[WARNING] Reinitializing repository, all existing files will be removed...");
+            warn!("Reinitializing repository, all existing files will be removed...");
             std::fs::remove_dir_all(&path_absolute).map_err(|e| DbCheckError::IO(e))?;
         }
 
         let repo = Repository::init(&path_absolute).map_err(|e| DbCheckError::Git(e))?;
-        println!("Repository initialized at {:?}", repo.path());
+        info!("Repository initialized at {:?}", repo.path());
 
         self.create_course_files(&path_absolute, context)?;
         Ok(())
@@ -52,36 +56,62 @@ impl CommandExecutor for InitCommand {
 }
 
 impl InitCommand {
-    fn create_course_files(&self, path: &PathBuf, context: &mut CommandContext) -> Result<(), DbCheckError> {
-        let dir = path.join(".db-academy");
-        std::fs::create_dir_all(dir.clone()).map_err(|e| DbCheckError::IO(e))?;
-        let course_syllabus = self.get_course_syllabus(context)?;
-        let syllabus_file = File::create(dir.join("syllabus.json")).map_err(|e| DbCheckError::IO(e))?;
-        serde_json::to_writer_pretty(syllabus_file, &course_syllabus).map_err(|e| DbCheckError::IO(e.into()))?;
-        println!("Course syllabus saved");
+    fn create_course_files(
+        &self,
+        path: &PathBuf,
+        context: &mut CommandContext,
+    ) -> Result<(), DbCheckError> {
+        debug!("Creating course files");
 
+        let dbacademydir = path.join(".db-academy");
+        debug!("Creating directory: {:?}", dbacademydir);
+        std::fs::create_dir_all(dbacademydir.clone()).map_err(|e| DbCheckError::IO(e))?;
+
+        debug!("Getting course syllabus");
+        let course_syllabus = self.get_course_syllabus(context)?;
+        debug!("Course syllabus: {:?}", course_syllabus);
+        let syllabus_file =
+            File::create(dbacademydir.join("syllabus.json")).map_err(|e| DbCheckError::IO(e))?;
+        serde_json::to_writer_pretty(syllabus_file, &course_syllabus)
+            .map_err(|e| DbCheckError::IO(e.into()))?;
+
+        debug!("Getting course status");
         let course_status = self.get_course_status(context)?;
-        let status_file = File::create(dir.join("status.json")).map_err(|e| DbCheckError::IO(e))?;
-        serde_json::to_writer_pretty(status_file, &course_status).map_err(|e| DbCheckError::IO(e.into()))?;
-        println!("Course status saved");
+        debug!("Course status: {:?}", course_status);
+        let status_file =
+            File::create(dbacademydir.join("status.json")).map_err(|e| DbCheckError::IO(e))?;
+        serde_json::to_writer_pretty(status_file, &course_status)
+            .map_err(|e| DbCheckError::IO(e.into()))?;
+        info!("Course metadata saved");
         Ok(())
     }
 
     fn get_course_syllabus(&self, context: &mut CommandContext) -> Result<Course, DbCheckError> {
+        debug!("Getting course syllabus");
         let url = format!("https://db-academy.io/api/course/{}", self.project_id);
-
+        debug!("URL: {:?}", url);
         let json_value = context.get_request(url)?;
+        debug!("JSON value: {:?}", json_value);
         let response_wrapper: CourseResponseWrapper = json_value.try_into()?;
+        debug!("Response wrapper: {:?}", response_wrapper);
         Ok(response_wrapper.body)
     }
 
-    fn get_course_status(&self, context: &mut CommandContext) -> Result<CourseStatus, DbCheckError> {
+    fn get_course_status(
+        &self,
+        context: &mut CommandContext,
+    ) -> Result<CourseStatus, DbCheckError> {
+        debug!("Getting course status");
         let url = format!("https://db-academy.io/api/course/{}", self.project_id);
+        debug!("URL: {:?}", url);
         let json_value = context.get_request(url)?;
+        debug!("JSON value: {:?}", json_value);
         let response_wrapper: CourseStatusResponseWrapper = json_value.try_into()?;
+        debug!("Response wrapper: {:?}", response_wrapper);
 
         let mut course_status = response_wrapper.body;
         if self.reinitialize {
+            debug!("Reinitializing course status");
             course_status.current_topic = None;
         }
         Ok(course_status)

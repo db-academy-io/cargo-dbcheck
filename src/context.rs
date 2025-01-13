@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use git2::Repository;
 use keyring::Entry;
+use log::info;
 
 use crate::error::DbCheckError;
 
@@ -34,8 +35,12 @@ impl<'a> CommandContext<'a> {
             request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
         }
 
-        let response = request_builder.send().map_err(|e| DbCheckError::Network(e.to_string()))?;
-        Ok(response.json().map_err(|e| DbCheckError::Network(e.to_string()))?)
+        let response = request_builder
+            .send()
+            .map_err(|e| DbCheckError::Network(e.to_string()))?;
+        Ok(response
+            .json()
+            .map_err(|e| DbCheckError::Network(e.to_string()))?)
     }
 
     pub fn is_repo_initialized(&mut self, path: &PathBuf) -> Result<bool, DbCheckError> {
@@ -43,7 +48,10 @@ impl<'a> CommandContext<'a> {
         let status_file = self.path_manager.get_course_status_file(path)?;
         let syllabus_file = self.path_manager.get_course_syllabus_file(path)?;
         let repo = Repository::open(path);
-        Ok(db_academy_dir.exists() && status_file.exists() && syllabus_file.exists() && repo.is_ok())
+        Ok(db_academy_dir.exists()
+            && status_file.exists()
+            && syllabus_file.exists()
+            && repo.is_ok())
     }
 }
 
@@ -74,7 +82,7 @@ impl SecretManager {
         entry
             .set_password(&token)
             .map_err(|e| DbCheckError::Keyring(e))?;
-        println!("The token has been saved successfully");
+        info!("The token has been saved successfully");
         Ok(())
     }
 
@@ -85,7 +93,7 @@ impl SecretManager {
         entry
             .delete_credential()
             .map_err(|e| DbCheckError::Keyring(e))?;
-        println!("Token has been removed.");
+        info!("Token has been removed.");
         Ok(())
     }
 }

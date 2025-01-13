@@ -1,4 +1,5 @@
 use clap::Args;
+use log::info;
 
 use crate::{commands::CommandExecutor, context::CommandContext, error::DbCheckError};
 
@@ -7,7 +8,7 @@ pub struct PullCommand {}
 
 impl CommandExecutor for PullCommand {
     fn execute(&self, _context: &mut CommandContext) -> Result<(), DbCheckError> {
-        println!("Updating");
+        info!("Updating");
         Ok(())
     }
 }

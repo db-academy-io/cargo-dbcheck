@@ -1,5 +1,5 @@
-use serde_derive::{Serialize, Deserialize};
 use crate::error::DbCheckError;
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CourseResponseWrapper {
@@ -46,8 +46,6 @@ pub struct Topic {
     pub topic_type: Option<String>,
     pub next: Option<String>,
 }
-
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CourseStatus {
