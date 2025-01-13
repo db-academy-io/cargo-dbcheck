@@ -19,6 +19,12 @@ impl<'a> CommandContext<'a> {
     pub fn get_remote_server_url(&mut self) -> Result<String, DbCheckError> {
         Ok("https://db-academy.io".to_string())
     }
+
+    pub fn get_request(&mut self, url: String) -> Result<serde_json::Value, DbCheckError> {
+        let client = reqwest::blocking::Client::new();
+        let response = client.get(url).send().map_err(|e| DbCheckError::Network(e.to_string()))?;
+        Ok(response.json().map_err(|e| DbCheckError::Network(e.to_string()))?)
+    }
 }
 
 #[derive(Debug)]

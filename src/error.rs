@@ -15,6 +15,9 @@ pub enum DbCheckError {
 
     /// An error related to network operations
     Network(String),
+
+    /// Format mismatch
+    FormatError(String),
 }
 
 impl Display for DbCheckError {
@@ -25,6 +28,7 @@ impl Display for DbCheckError {
             DbCheckError::InternalError(e) => write!(f, "Internal error: {}", e),
             DbCheckError::Git(e) => write!(f, "Git error: {}", e),
             DbCheckError::Network(e) => write!(f, "Network error: {}", e),
+            DbCheckError::FormatError(e) => write!(f, "Format error: {}", e),
         }
     }
 }
