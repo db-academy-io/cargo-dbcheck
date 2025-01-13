@@ -39,7 +39,7 @@ fn main() {
 fn init_logger() -> Result<(), DbCheckError> {
     let base_config = Dispatch::new();
 
-    let logfile = fern::log_file("log/output.log").map_err(|e| DbCheckError::IO(e))?;
+    let logfile = fern::log_file("log/output.log").map_err(DbCheckError::IO)?;
     let file_config = Dispatch::new().level(LevelFilter::Debug).chain(logfile);
 
     let stdout_config = Dispatch::new()

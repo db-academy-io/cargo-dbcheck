@@ -23,7 +23,7 @@ impl CommandExecutor for LoginCommand {
         let mut buffer = String::new();
         io::stdin()
             .read_line(&mut buffer)
-            .map_err(|e| DbCheckError::IO(e))?;
+            .map_err(DbCheckError::IO)?;
 
         let token = buffer.trim();
         if token.is_empty() {

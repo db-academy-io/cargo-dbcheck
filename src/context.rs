@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use git2::Repository;
 use keyring::Entry;
@@ -38,9 +38,9 @@ impl<'a> CommandContext<'a> {
         let response = request_builder
             .send()
             .map_err(|e| DbCheckError::Network(e.to_string()))?;
-        Ok(response
+        response
             .json()
-            .map_err(|e| DbCheckError::Network(e.to_string()))?)
+            .map_err(|e| DbCheckError::Network(e.to_string()))
     }
 
     pub fn is_repo_initialized(&mut self, path: &PathBuf) -> Result<bool, DbCheckError> {
@@ -63,25 +63,25 @@ impl SecretManager {
     pub fn get_active_token(&mut self) -> Result<String, DbCheckError> {
         let service = "db-academy-io";
         let username = "db-academy-io-secret-token";
-        let entry = Entry::new(service, username).map_err(|e| DbCheckError::Keyring(e))?;
-        let password = entry.get_password().map_err(|e| DbCheckError::Keyring(e))?;
+        let entry = Entry::new(service, username).map_err(DbCheckError::Keyring)?;
+        let password = entry.get_password().map_err(DbCheckError::Keyring)?;
         Ok(password)
     }
 
     pub fn is_token_set(&mut self) -> Result<bool, DbCheckError> {
         let service = "db-academy-io";
         let username = "db-academy-io-secret-token";
-        let entry = Entry::new(service, username).map_err(|e| DbCheckError::Keyring(e))?;
+        let entry = Entry::new(service, username).map_err(DbCheckError::Keyring)?;
         Ok(entry.get_password().is_ok())
     }
 
     pub fn save_token(&mut self, token: String) -> Result<(), DbCheckError> {
         let service = "db-academy-io";
         let username = "db-academy-io-secret-token";
-        let entry = Entry::new(service, username).map_err(|e| DbCheckError::Keyring(e))?;
+        let entry = Entry::new(service, username).map_err(DbCheckError::Keyring)?;
         entry
             .set_password(&token)
-            .map_err(|e| DbCheckError::Keyring(e))?;
+            .map_err(DbCheckError::Keyring)?;
         info!("The token has been saved successfully");
         Ok(())
     }
@@ -89,10 +89,10 @@ impl SecretManager {
     pub fn remove_token(&mut self) -> Result<(), DbCheckError> {
         let service = "db-academy-io";
         let username = "db-academy-io-secret-token";
-        let entry = Entry::new(service, username).map_err(|e| DbCheckError::Keyring(e))?;
+        let entry = Entry::new(service, username).map_err(DbCheckError::Keyring)?;
         entry
             .delete_credential()
-            .map_err(|e| DbCheckError::Keyring(e))?;
+            .map_err(DbCheckError::Keyring)?;
         info!("Token has been removed.");
         Ok(())
     }
@@ -102,15 +102,15 @@ impl SecretManager {
 pub struct PathManager;
 
 impl PathManager {
-    pub fn get_repo_path(&self, path: &PathBuf) -> Result<PathBuf, DbCheckError> {
+    pub fn get_repo_path(&self, path: &Path) -> Result<PathBuf, DbCheckError> {
         Ok(path.join(".db-academy"))
     }
 
-    pub fn get_course_status_file(&self, path: &PathBuf) -> Result<PathBuf, DbCheckError> {
+    pub fn get_course_status_file(&self, path: &Path) -> Result<PathBuf, DbCheckError> {
         Ok(self.get_repo_path(path)?.join("status.json"))
     }
 
-    pub fn get_course_syllabus_file(&self, path: &PathBuf) -> Result<PathBuf, DbCheckError> {
+    pub fn get_course_syllabus_file(&self, path: &Path) -> Result<PathBuf, DbCheckError> {
         Ok(self.get_repo_path(path)?.join("syllabus.json"))
     }
 }

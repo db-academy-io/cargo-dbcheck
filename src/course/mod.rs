@@ -10,7 +10,7 @@ impl TryFrom<serde_json::Value> for CourseResponseWrapper {
     type Error = DbCheckError;
 
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
-        Ok(serde_json::from_value(value).map_err(|e| DbCheckError::FormatError(e.to_string()))?)
+        serde_json::from_value(value).map_err(|e| DbCheckError::FormatError(e.to_string()))
     }
 }
 
@@ -63,6 +63,6 @@ impl TryFrom<serde_json::Value> for CourseStatusResponseWrapper {
     type Error = DbCheckError;
 
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
-        Ok(serde_json::from_value(value).map_err(|e| DbCheckError::FormatError(e.to_string()))?)
+        serde_json::from_value(value).map_err(|e| DbCheckError::FormatError(e.to_string()))
     }
 }
