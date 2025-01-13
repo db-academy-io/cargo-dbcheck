@@ -76,7 +76,7 @@ impl InitCommand {
             .map_err(|e| DbCheckError::IO(e.into()))?;
 
         let course_status = self.get_course_status(context)?;
-        
+
         let status_file =
             File::create(dbacademydir.join("status.json")).map_err(DbCheckError::IO)?;
         serde_json::to_writer_pretty(status_file, &course_status)
@@ -89,7 +89,7 @@ impl InitCommand {
         debug!("Getting course syllabus");
         let url = format!("https://db-academy.io/api/course/{}", self.project_id);
         debug!("URL: {:?}", url);
-        
+
         let json_value = context.get_request(url)?;
         let response_wrapper: CourseResponseWrapper = json_value.try_into()?;
         Ok(response_wrapper.body)
@@ -100,10 +100,10 @@ impl InitCommand {
         context: &mut CommandContext,
     ) -> Result<CourseStatus, DbCheckError> {
         debug!("Getting course status");
-        
+
         let url = format!("https://db-academy.io/api/course/{}", self.project_id);
         debug!("URL: {:?}", url);
-        
+
         let json_value = context.get_request(url)?;
         let response_wrapper: CourseStatusResponseWrapper = json_value.try_into()?;
 

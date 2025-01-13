@@ -40,7 +40,7 @@ impl<'a> CommandContext<'a> {
         let response = request_builder
             .send()
             .map_err(|e| DbCheckError::Network(e.to_string()))?;
-        
+
         debug!("Response status: {:?}", response.status());
 
         response
@@ -53,16 +53,16 @@ impl<'a> CommandContext<'a> {
 
         let db_academy_dir = self.path_manager.get_repo_path(path)?;
         debug!("DB Academy directory: {:?}", db_academy_dir);
-        
+
         let status_file = self.path_manager.get_course_status_file(path)?;
         debug!("Status file: {:?}", status_file);
-        
+
         let syllabus_file = self.path_manager.get_course_syllabus_file(path)?;
         debug!("Syllabus file: {:?}", syllabus_file);
-        
+
         let repo = Repository::open(path);
         debug!("Repo: {:?}", repo.is_ok());
-        
+
         Ok(db_academy_dir.exists()
             && status_file.exists()
             && syllabus_file.exists()
@@ -93,9 +93,7 @@ impl SecretManager {
         let service = "db-academy-io";
         let username = "db-academy-io-secret-token";
         let entry = Entry::new(service, username).map_err(DbCheckError::Keyring)?;
-        entry
-            .set_password(&token)
-            .map_err(DbCheckError::Keyring)?;
+        entry.set_password(&token).map_err(DbCheckError::Keyring)?;
         info!("The token has been saved successfully");
         Ok(())
     }
@@ -104,9 +102,7 @@ impl SecretManager {
         let service = "db-academy-io";
         let username = "db-academy-io-secret-token";
         let entry = Entry::new(service, username).map_err(DbCheckError::Keyring)?;
-        entry
-            .delete_credential()
-            .map_err(DbCheckError::Keyring)?;
+        entry.delete_credential().map_err(DbCheckError::Keyring)?;
         info!("Token has been removed.");
         Ok(())
     }
