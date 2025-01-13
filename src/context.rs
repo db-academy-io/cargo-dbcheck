@@ -1,3 +1,6 @@
+use std::path::PathBuf;
+
+use git2::Repository;
 use keyring::Entry;
 
 use crate::error::DbCheckError;
@@ -6,6 +9,7 @@ use crate::error::DbCheckError;
 pub struct CommandContext<'a> {
     pub _config: &'a str,
     pub secret_manager: SecretManager,
+    pub path_manager: PathManager,
 }
 
 impl<'a> CommandContext<'a> {
@@ -13,6 +17,7 @@ impl<'a> CommandContext<'a> {
         Self {
             _config: config,
             secret_manager: SecretManager,
+            path_manager: PathManager,
         }
     }
 
@@ -22,8 +27,23 @@ impl<'a> CommandContext<'a> {
 
     pub fn get_request(&mut self, url: String) -> Result<serde_json::Value, DbCheckError> {
         let client = reqwest::blocking::Client::new();
-        let response = client.get(url).send().map_err(|e| DbCheckError::Network(e.to_string()))?;
+
+        let mut request_builder = client.get(url);
+
+        if let Ok(token) = self.secret_manager.get_active_token() {
+            request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+        }
+
+        let response = request_builder.send().map_err(|e| DbCheckError::Network(e.to_string()))?;
         Ok(response.json().map_err(|e| DbCheckError::Network(e.to_string()))?)
+    }
+
+    pub fn is_repo_initialized(&mut self, path: &PathBuf) -> Result<bool, DbCheckError> {
+        let db_academy_dir = self.path_manager.get_repo_path(path)?;
+        let status_file = self.path_manager.get_course_status_file(path)?;
+        let syllabus_file = self.path_manager.get_course_syllabus_file(path)?;
+        let repo = Repository::open(path);
+        Ok(db_academy_dir.exists() && status_file.exists() && syllabus_file.exists() && repo.is_ok())
     }
 }
 
@@ -67,5 +87,22 @@ impl SecretManager {
             .map_err(|e| DbCheckError::Keyring(e))?;
         println!("Token has been removed.");
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct PathManager;
+
+impl PathManager {
+    pub fn get_repo_path(&self, path: &PathBuf) -> Result<PathBuf, DbCheckError> {
+        Ok(path.join(".db-academy"))
+    }
+
+    pub fn get_course_status_file(&self, path: &PathBuf) -> Result<PathBuf, DbCheckError> {
+        Ok(self.get_repo_path(path)?.join("status.json"))
+    }
+
+    pub fn get_course_syllabus_file(&self, path: &PathBuf) -> Result<PathBuf, DbCheckError> {
+        Ok(self.get_repo_path(path)?.join("syllabus.json"))
     }
 }

@@ -11,7 +11,7 @@ repository = "https://github.com/db-academy-io/cargo-dbcheck"
 [dependencies]
 keyring = { version = "3", features = ["apple-native", "windows-native", "linux-native", "sync-secret-service"] }
 clap = { version = "4.5.4", features = ["derive"] }
-clap-cargo = "0.14.1"
+clap-cargo = "0.15.2"
 git2 = "0.20.0"
 serde = "1.0.217"
 serde_json = "1.0.135"

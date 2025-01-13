@@ -1,7 +1,7 @@
 use clap::Args;
 use git2::Repository;
-use std::fs::{File};
-use std::path::{self, PathBuf};
+use std::fs::File;
+use std::path::{PathBuf, self};
 
 use crate::{course::{Course, CourseResponseWrapper, CourseStatus, CourseStatusResponseWrapper}, error::DbCheckError};
 
@@ -17,9 +17,9 @@ pub struct InitCommand {
     #[arg(long)]
     pub path: Option<PathBuf>,
 
-    /// Start course from the first topic
+    /// Reinitialize the repository, remove all existing files and start course from scratch
     #[arg(long, default_value_t = false)]
-    pub no_progress: bool,
+    pub reinitialize: bool,
 }
 
 impl CommandExecutor for InitCommand {
@@ -27,13 +27,26 @@ impl CommandExecutor for InitCommand {
     fn execute(&self, context: &mut CommandContext) -> Result<(), DbCheckError> {
         println!("Initializing course project repository");
         println!("Project id: {}", self.project_id);
-        let path = self.path.clone().unwrap_or(".".into());
-        println!("Path: {}", path.to_string_lossy());
+        
+        let path_given = self.path.clone().unwrap_or(".".into());
+        
+        let path_absolute = path::absolute(&path_given)
+            .map_err(|e| DbCheckError::IO(e))?;
+        
+        if context.is_repo_initialized(&path_absolute)? && !self.reinitialize {
+            println!("Repository already initialized");
+            return Ok(());
+        }
 
-        let repo = Repository::init(&path).map_err(|e| DbCheckError::Git(e))?;
+        if self.reinitialize {
+            println!("[WARNING] Reinitializing repository, all existing files will be removed...");
+            std::fs::remove_dir_all(&path_absolute).map_err(|e| DbCheckError::IO(e))?;
+        }
+
+        let repo = Repository::init(&path_absolute).map_err(|e| DbCheckError::Git(e))?;
         println!("Repository initialized at {:?}", repo.path());
 
-        self.create_course_files(&path, context)?;
+        self.create_course_files(&path_absolute, context)?;
         Ok(())
     }
 }
@@ -68,7 +81,7 @@ impl InitCommand {
         let response_wrapper: CourseStatusResponseWrapper = json_value.try_into()?;
 
         let mut course_status = response_wrapper.body;
-        if self.no_progress {
+        if self.reinitialize {
             course_status.current_topic = None;
         }
         Ok(course_status)
