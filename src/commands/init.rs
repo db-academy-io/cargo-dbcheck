@@ -5,7 +5,7 @@ use std::fs::File;
 use std::path::{self, Path, PathBuf};
 
 use crate::{
-    course::{Course, CourseResponseWrapper, CourseStatus, CourseStatusResponseWrapper},
+    course::{CourseResponseWrapper, CourseStatus, CourseStatusResponseWrapper, CourseSyllabus},
     error::DbCheckError,
 };
 
@@ -91,7 +91,10 @@ impl InitCommand {
         Ok(())
     }
 
-    fn get_course_syllabus(&self, context: &mut CommandContext) -> Result<Course, DbCheckError> {
+    fn get_course_syllabus(
+        &self,
+        context: &mut CommandContext,
+    ) -> Result<CourseSyllabus, DbCheckError> {
         debug!("Getting course syllabus");
         let url = format!("{}/api/course/{}", context.get_base_url(), self.project_id);
         debug!("URL: {:?}", url);

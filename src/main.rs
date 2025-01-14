@@ -11,7 +11,7 @@ use context::CommandContext;
 use error::DbCheckError;
 use fern::Dispatch;
 use log::{error, LevelFilter};
-use std::{env, fs::File, path::Path};
+use std::{env, fs::OpenOptions, path::Path};
 
 use clap::Parser;
 
@@ -43,7 +43,11 @@ fn init_logger() -> Result<(), DbCheckError> {
     let log_path = Path::new("log/output.log");
     let log_dir = log_path.parent().unwrap();
     std::fs::create_dir_all(log_dir).map_err(DbCheckError::IO)?;
-    let logfile = File::create(log_path).map_err(DbCheckError::IO)?;
+    let logfile = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(log_path)
+        .map_err(DbCheckError::IO)?;
 
     let file_config = Dispatch::new()
         .level(LevelFilter::Debug)

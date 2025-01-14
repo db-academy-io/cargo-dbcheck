@@ -1,5 +1,6 @@
 use std::{
-    fs::File,
+    fs::{File, OpenOptions},
+    io::Write,
     path::{Path, PathBuf},
 };
 
@@ -7,7 +8,10 @@ use git2::Repository;
 use keyring::Entry;
 use log::{debug, info};
 
-use crate::{course::CourseStatus, error::DbCheckError};
+use crate::{
+    course::{Chapter, CourseStatus, CourseSyllabus},
+    error::DbCheckError,
+};
 
 #[derive(Debug)]
 pub struct CommandContext<'a> {
@@ -82,6 +86,68 @@ impl<'a> CommandContext<'a> {
         let json_value = self.json_from_file(&status_file)?;
         let status = CourseStatus::try_from(json_value)?;
         Ok(status)
+    }
+
+    pub fn update_course_status(&self, status: CourseStatus) -> Result<(), DbCheckError> {
+        debug!("Updating course status");
+        let current_dir = std::env::current_dir().map_err(DbCheckError::IO)?;
+        debug!("Current directory: {:?}", current_dir);
+        let status_file = self.path_manager.get_course_status_file(&current_dir)?;
+        debug!("Status file: {:?}", status_file);
+
+        let mut file = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(status_file)
+            .map_err(DbCheckError::IO)?;
+        serde_json::to_writer_pretty(&mut file, &status)
+            .map_err(|e| DbCheckError::FormatError(e.to_string()))?;
+        file.flush().map_err(DbCheckError::IO)?;
+        Ok(())
+    }
+
+    pub fn get_course_syllabus(&self) -> Result<CourseSyllabus, DbCheckError> {
+        debug!("Getting course syllabus");
+        let current_dir = std::env::current_dir().map_err(DbCheckError::IO)?;
+        debug!("Current directory: {:?}", current_dir);
+        let syllabus_file = self.path_manager.get_course_syllabus_file(&current_dir)?;
+        debug!("Syllabus file: {:?}", syllabus_file);
+        let json_value = self.json_from_file(&syllabus_file)?;
+        let syllabus = CourseSyllabus::try_from(json_value)?;
+        Ok(syllabus)
+    }
+
+    pub fn get_current_topic(&self) -> Result<Option<String>, DbCheckError> {
+        Ok(self.get_course_status()?.current_topic)
+    }
+
+    pub fn get_current_chapter(&self) -> Result<Option<Chapter>, DbCheckError> {
+        debug!("Getting current chapter");
+        let chapter_id = self.get_course_status()?.current_chapter;
+        debug!("Chapter ID: {:?}", chapter_id);
+
+        if let Some(chapter_id) = chapter_id {
+            let syllabus = self.get_course_syllabus()?;
+            debug!("Syllabus readed");
+            let chapter = syllabus.chapters.into_iter().find(|c| c.url == chapter_id);
+            debug!("Chapter found: {:?}", chapter.is_some());
+            Ok(chapter)
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn find_chapter_by_topic_url(
+        &self,
+        topic_url: &str,
+    ) -> Result<Option<Chapter>, DbCheckError> {
+        let syllabus = self.get_course_syllabus()?;
+
+        let chapter = syllabus
+            .chapters
+            .into_iter()
+            .find(|c| c.topics.iter().any(|t| t.url == topic_url));
+        Ok(chapter)
     }
 
     fn json_from_file(&self, path: &PathBuf) -> Result<serde_json::Value, DbCheckError> {
