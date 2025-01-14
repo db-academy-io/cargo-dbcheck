@@ -25,8 +25,9 @@ impl<'a> CommandContext<'a> {
         }
     }
 
-    pub fn get_remote_server_url(&mut self) -> Result<String, DbCheckError> {
-        Ok("https://db-academy.io".to_string())
+    pub fn get_base_url(&mut self) -> String {
+        "https://db-academy.io".to_string()
+        // "http://localhost:3000".to_string()
     }
 
     pub fn get_request(&mut self, url: String) -> Result<serde_json::Value, DbCheckError> {

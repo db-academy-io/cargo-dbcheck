@@ -24,6 +24,10 @@ pub struct InitCommand {
     /// Reinitialize the repository, remove all existing files and start course from scratch
     #[arg(long, default_value_t = false)]
     pub reinitialize: bool,
+
+    /// Do not create a git repo
+    #[arg(long, default_value_t = false)]
+    pub no_git_repo: bool,
 }
 
 impl CommandExecutor for InitCommand {
@@ -49,8 +53,10 @@ impl CommandExecutor for InitCommand {
             }
         }
 
-        let repo = Repository::init(&path_absolute).map_err(DbCheckError::Git)?;
-        info!("Repository initialized at {:?}", repo.path());
+        if !self.no_git_repo {
+            let repo = Repository::init(&path_absolute).map_err(DbCheckError::Git)?;
+            info!("Repository initialized at {:?}", repo.path());
+        }
 
         self.create_course_files(&path_absolute, context)?;
         Ok(())
@@ -87,7 +93,7 @@ impl InitCommand {
 
     fn get_course_syllabus(&self, context: &mut CommandContext) -> Result<Course, DbCheckError> {
         debug!("Getting course syllabus");
-        let url = format!("https://db-academy.io/api/course/{}", self.project_id);
+        let url = format!("{}/api/course/{}", context.get_base_url(), self.project_id);
         debug!("URL: {:?}", url);
 
         let json_value = context.get_request(url)?;
@@ -101,7 +107,7 @@ impl InitCommand {
     ) -> Result<CourseStatus, DbCheckError> {
         debug!("Getting course status");
 
-        let url = format!("https://db-academy.io/api/course/{}", self.project_id);
+        let url = format!("{}/api/course/{}", context.get_base_url(), self.project_id);
         debug!("URL: {:?}", url);
 
         let json_value = context.get_request(url)?;

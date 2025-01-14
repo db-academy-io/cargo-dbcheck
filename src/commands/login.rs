@@ -11,7 +11,7 @@ pub struct LoginCommand {}
 
 impl CommandExecutor for LoginCommand {
     fn execute(&self, context: &mut CommandContext) -> Result<(), DbCheckError> {
-        let auth_url = context.get_remote_server_url()? + "/auth/cli";
+        let auth_url = format!("{}/auth/cli", context.get_base_url());
 
         info!(
             "Go to the following link in your browser, and complete the sign-in prompts:\n{auth_url}\n"
