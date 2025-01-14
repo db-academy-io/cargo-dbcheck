@@ -56,7 +56,7 @@ impl<'a> CommandContext<'a> {
         debug!("Checking if repo is initialized");
 
         let db_academy_dir = self.path_manager.get_repo_path(path)?;
-        debug!("DB Academy directory: {:?}", db_academy_dir);
+        debug!("db-academy directory: {:?}", db_academy_dir);
 
         let status_file = self.path_manager.get_course_status_file(path)?;
         debug!("Status file: {:?}", status_file);
