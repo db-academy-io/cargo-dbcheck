@@ -40,37 +40,43 @@ fn main() {
 }
 
 fn init_logger() -> Result<(), DbCheckError> {
-    let base_config = Dispatch::new();
-
     let log_path = Path::new("log/output.log");
     let log_dir = log_path.parent().unwrap();
     std::fs::create_dir_all(log_dir).map_err(DbCheckError::IO)?;
     let logfile = File::create(log_path).map_err(DbCheckError::IO)?;
-    let file_config = Dispatch::new().level(LevelFilter::Debug).chain(logfile);
+
+    let file_config = Dispatch::new()
+        .level(LevelFilter::Debug)
+        .format(
+            |out: fern::FormatCallback, message: &std::fmt::Arguments, record: &log::Record| {
+                let target = record
+                    .target()
+                    .split("::")
+                    .last()
+                    .unwrap_or("")
+                    .to_uppercase();
+
+                out.finish(format_args!(
+                    "[{target} Command][{level}] {message}",
+                    level = record.level(),
+                    target = target,
+                    message = message
+                ));
+            },
+        )
+        .chain(logfile);
 
     let stdout_config = Dispatch::new()
         .level(LevelFilter::Info)
+        .format(
+            |out: fern::FormatCallback, message: &std::fmt::Arguments, _record: &log::Record| {
+                out.finish(format_args!("{message}", message = message));
+            },
+        )
         .chain(std::io::stdout());
 
-    let formatter =
-        |out: fern::FormatCallback, message: &std::fmt::Arguments, record: &log::Record| {
-            let target = record
-                .target()
-                .split("::")
-                .last()
-                .unwrap_or("")
-                .to_uppercase();
-
-            out.finish(format_args!(
-                "[{target}][{level}] {message}",
-                level = record.level(),
-                target = target,
-                message = message
-            ));
-        };
-
+    let base_config = Dispatch::new();
     base_config
-        .format(formatter)
         .chain(file_config)
         .chain(stdout_config)
         .apply()

@@ -1,10 +1,13 @@
-use std::path::{Path, PathBuf};
+use std::{
+    fs::File,
+    path::{Path, PathBuf},
+};
 
 use git2::Repository;
 use keyring::Entry;
 use log::{debug, info};
 
-use crate::error::DbCheckError;
+use crate::{course::CourseStatus, error::DbCheckError};
 
 #[derive(Debug)]
 pub struct CommandContext<'a> {
@@ -67,6 +70,24 @@ impl<'a> CommandContext<'a> {
             && status_file.exists()
             && syllabus_file.exists()
             && repo.is_ok())
+    }
+
+    pub fn get_course_status(&self) -> Result<CourseStatus, DbCheckError> {
+        debug!("Getting course status");
+        let current_dir = std::env::current_dir().map_err(DbCheckError::IO)?;
+        debug!("Current directory: {:?}", current_dir);
+        let status_file = self.path_manager.get_course_status_file(&current_dir)?;
+        debug!("Status file: {:?}", status_file);
+        let json_value = self.json_from_file(&status_file)?;
+        let status = CourseStatus::try_from(json_value)?;
+        Ok(status)
+    }
+
+    fn json_from_file(&self, path: &PathBuf) -> Result<serde_json::Value, DbCheckError> {
+        let file = File::open(path).map_err(DbCheckError::IO)?;
+        let json_value =
+            serde_json::from_reader(file).map_err(|e| DbCheckError::FormatError(e.to_string()))?;
+        Ok(json_value)
     }
 }
 

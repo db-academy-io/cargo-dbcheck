@@ -29,6 +29,7 @@ pub struct Course {
     pub description_summary: String,
     pub learning_items: Vec<String>,
     pub chapters: Vec<Chapter>,
+    pub url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -36,6 +37,7 @@ pub struct Chapter {
     pub id: String,
     pub title: String,
     pub topics: Vec<Topic>,
+    pub url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -45,14 +47,28 @@ pub struct Topic {
     #[serde(rename = "type")]
     pub topic_type: Option<String>,
     pub next: Option<String>,
+    pub url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CourseStatus {
     pub id: String,
+
     pub enrolled: bool,
+
     #[serde(rename = "currentTopic")]
     pub current_topic: Option<String>,
+
+    #[serde(rename = "completedTopics", default = "Vec::new")]
+    pub completed: Vec<String>,
+}
+
+impl TryFrom<serde_json::Value> for CourseStatus {
+    type Error = DbCheckError;
+
+    fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
+        serde_json::from_value(value).map_err(|e| DbCheckError::FormatError(e.to_string()))
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
