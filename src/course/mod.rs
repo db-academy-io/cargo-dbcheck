@@ -51,6 +51,7 @@ pub struct Topic {
 pub struct CourseStatus {
     pub id: String,
     pub enrolled: bool,
+    #[serde(rename = "currentTopic")]
     pub current_topic: Option<String>,
 }
 
